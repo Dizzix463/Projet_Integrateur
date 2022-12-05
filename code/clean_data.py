@@ -39,3 +39,4 @@ print("Nombre de colonne(s) du dataframe après nettoyage:", len(clean_df.column
 
 print("***** ENREGISTREMENT DU DATASET NETTOYÉ *****")
 save_csv(clean_df,'test.csv')
+print("***** FIN *****")
