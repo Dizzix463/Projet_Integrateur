@@ -1,9 +1,24 @@
 ### THIS PROGRAM TEND TO CLEAN DATA SET ###
 
 import pandas as pd
+import os
 
 # Indicate the path to save clean csv
-path = "data/clean/"
+directory = "../data/input/"
+
+
+# Drop non-usable columns of the dataset
+def drop_non_usable(df):
+    df.drop(df.filter(regex="Unname"), axis=1, inplace=True)
+    df.drop(['Date/Time'], axis=1, inplace=True)
+    df.drop(['Recipe.RecipeName'], axis=1, inplace=True)
+
+
+# Drop nulls rows of the dataset
+def null_rows(df):
+    df = df.drop(df[df.isin([0, 0.0]).all(axis=1)].index, axis=0)
+    return df
+
 
 # Return list of unique and non unique columns for a dataframe
 def unique_cols(df):
@@ -20,23 +35,28 @@ def clean_dataset(df):
             del df[df_columns[i]]
     return df
 
-def save_csv(df,name : str):
-    df.to_csv(path+name, index=False)
 
-df = pd.read_csv("data/A1417-20221205T084035Z-001/A1417/2021-09-24_04-00-50_Bx-P1-C0-Growth-A1417 SL calib.csv",
-                 sep=";", skiprows=1)
+def save_csv(df, name: str):
+    df.to_csv(directory + name, index=False)
 
-print("***** INITIALISATION DU DATAFRAME *****")
-print("Nombre de colonne(s) du dataframe:", len(df.columns.values.tolist()))
 
-print("***** ETUDE DES COLONNES UNIQUES  *****")
-u_columns = unique_cols(df)
-print("Nombre de colonne(s) non unique:", sum(1 for x in u_columns if x))
+for file in os.listdir(directory):
+    print("***** INITIALISATION DU DATAFRAME *****")
+    df = pd.read_csv("../data/input/"+file, sep=";", skiprows=1)
+    drop_non_usable(df)
+    print("Nombre de colonne(s) du dataframe:", len(df.columns.values.tolist()))
 
-print("***** NETTOYAGE DU DATASET *****")
-clean_df = clean_dataset(df)
-print("Nombre de colonne(s) du dataframe après nettoyage:", len(clean_df.columns.values.tolist()))
+    print("***** ETUDE DES LIGNES NULLES  *****")
+    df = null_rows(df)
 
-print("***** ENREGISTREMENT DU DATASET NETTOYÉ *****")
-save_csv(clean_df,'test.csv')
-print("***** FIN *****")
+    print("***** ETUDE DES COLONNES UNIQUES  *****")
+    u_columns = unique_cols(df)
+    print("Nombre de colonne(s) non unique:", sum(1 for x in u_columns if x))
+
+    print("***** NETTOYAGE DU DATASET *****")
+    clean_df = clean_dataset(df)
+    print("Nombre de colonne(s) du dataframe après nettoyage:", len(clean_df.columns.values.tolist()))
+
+    print("***** ENREGISTREMENT DU DATASET NETTOYÉ *****")
+    save_csv(clean_df, f'../output/clean_{file}.csv')
+    print("***** FIN *****")
